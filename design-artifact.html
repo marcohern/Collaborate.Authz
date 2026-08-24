@@ -1,0 +1,334 @@
+<style>
+  :root {
+    --paper: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --ink: #14181f;
+    --muted: #5b6472;
+    --faint: #7c8698;
+    --hairline: #e0e4ea;
+    --accent: #0f7d78;
+    --accent-ink: #0b5b57;
+    --accent-soft: #e4f1f0;
+    --amber: #9c5c10;
+    --amber-soft: #f6ecdc;
+    --allow: #1f7a4d;
+    --deny: #b3372f;
+    --shadow: 0 1px 2px rgba(20,24,31,.04), 0 8px 28px rgba(20,24,31,.06);
+    --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", "Menlo", "Consolas", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0e1116; --surface: #151a21; --surface-2: #1b222b;
+      --ink: #e6eaf0; --muted: #98a2b1; --faint: #77828f; --hairline: #28303b;
+      --accent: #43bcb4; --accent-ink: #6fd0c9; --accent-soft: #10322f;
+      --amber: #d9a441; --amber-soft: #2c2413;
+      --allow: #4bbd85; --deny: #e57a70;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f5f6f8; --surface: #ffffff; --surface-2: #eef1f5;
+    --ink: #14181f; --muted: #5b6472; --faint: #7c8698; --hairline: #e0e4ea;
+    --accent: #0f7d78; --accent-ink: #0b5b57; --accent-soft: #e4f1f0;
+    --amber: #9c5c10; --amber-soft: #f6ecdc;
+    --allow: #1f7a4d; --deny: #b3372f;
+    --shadow: 0 1px 2px rgba(20,24,31,.04), 0 8px 28px rgba(20,24,31,.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #0e1116; --surface: #151a21; --surface-2: #1b222b;
+    --ink: #e6eaf0; --muted: #98a2b1; --faint: #77828f; --hairline: #28303b;
+    --accent: #43bcb4; --accent-ink: #6fd0c9; --accent-soft: #10322f;
+    --amber: #d9a441; --amber-soft: #2c2413;
+    --allow: #4bbd85; --deny: #e57a70;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: clamp(1.5rem, 4vw, 4rem) clamp(1.1rem, 4vw, 2.5rem) 5rem; }
+
+  /* ---- masthead ---- */
+  .masthead { border-bottom: 1px solid var(--hairline); padding-bottom: 2rem; margin-bottom: 2.5rem; }
+  .kicker {
+    font-family: var(--mono); font-size: .74rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-ink); display: flex; align-items: center; gap: .6rem; margin-bottom: 1.1rem;
+  }
+  .kicker::before { content: ""; width: 1.6rem; height: 2px; background: var(--accent); display: inline-block; }
+  h1 {
+    font-size: clamp(2rem, 5.2vw, 3.1rem); line-height: 1.04; letter-spacing: -.02em;
+    font-weight: 800; margin: 0 0 .9rem; text-wrap: balance;
+  }
+  .lede { font-size: clamp(1.02rem, 2.2vw, 1.2rem); color: var(--muted); max-width: 44ch; margin: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.6rem; }
+  .tag {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .04em;
+    padding: .28rem .6rem; border: 1px solid var(--hairline); border-radius: 999px;
+    color: var(--muted); background: var(--surface);
+  }
+
+  /* ---- sections ---- */
+  section { margin-top: 3rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--accent-ink); display: flex; align-items: baseline; gap: .7rem; margin-bottom: .5rem;
+  }
+  .eyebrow .num {
+    color: var(--accent); font-weight: 700;
+    border: 1px solid var(--accent); border-radius: .35rem; padding: 0 .38rem; font-size: .72rem;
+  }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2rem); letter-spacing: -.015em; font-weight: 750; margin: .1rem 0 1rem; text-wrap: balance; }
+  h3 { font-size: 1.06rem; letter-spacing: -.005em; margin: 2rem 0 .5rem; font-weight: 700; }
+  p { margin: 0 0 1rem; max-width: 68ch; }
+  strong { font-weight: 680; }
+  a { color: var(--accent-ink); }
+
+  /* ---- code / claim chips ---- */
+  code, .chip {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--surface-2); padding: .1em .38em; border-radius: .3rem;
+    border: 1px solid var(--hairline); white-space: nowrap;
+  }
+  .chip.act { color: var(--amber); background: var(--amber-soft); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+  .chip.accent { color: var(--accent-ink); background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 32%, transparent); }
+
+  /* ---- callout ---- */
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline); border-left: 3px solid var(--accent);
+    border-radius: .55rem; padding: 1.15rem 1.3rem; margin: 1.5rem 0; box-shadow: var(--shadow);
+  }
+  .callout .lbl { font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink); display:block; margin-bottom: .4rem; }
+  .callout p { margin: 0; max-width: none; }
+
+  /* ---- diagram ---- */
+  figure { margin: 1.5rem 0; }
+  .diagram {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: .6rem;
+    padding: 1.2rem; overflow-x: auto; box-shadow: var(--shadow);
+  }
+  .diagram pre.mermaid { margin: 0; min-width: 520px; text-align: center; }
+  figcaption { font-family: var(--mono); font-size: .74rem; color: var(--faint); letter-spacing: .04em; margin-top: .6rem; text-align: center; }
+
+  /* ---- tables ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--hairline); border-radius: .6rem; box-shadow: var(--shadow); margin: 1.4rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; background: var(--surface); font-size: .93rem; }
+  th, td { text-align: left; padding: .72rem .95rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); background: var(--surface-2); font-weight: 600;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 620; white-space: nowrap; }
+
+  /* ---- guard list ---- */
+  .guards { list-style: none; padding: 0; margin: 1.2rem 0; display: flex; flex-direction: column; gap: .6rem; }
+  .guards li {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: .5rem;
+    padding: .85rem 1rem .85rem 1rem; display: grid; grid-template-columns: auto 1fr; gap: .85rem; align-items: start;
+  }
+  .guards .mark {
+    font-family: var(--mono); font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+    color: var(--allow); border: 1px solid color-mix(in srgb, var(--allow) 40%, transparent);
+    background: color-mix(in srgb, var(--allow) 12%, transparent);
+    border-radius: .35rem; padding: .18rem .42rem; margin-top: .1rem; white-space: nowrap;
+  }
+  .guards li p { margin: 0; }
+
+  /* ---- phased / steps ---- */
+  ol.phases { counter-reset: step; list-style: none; padding: 0; margin: 1.2rem 0; display: flex; flex-direction: column; gap: .55rem; }
+  ol.phases li { position: relative; padding-left: 2.6rem; }
+  ol.phases li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: .05rem;
+    font-family: var(--mono); font-size: .8rem; font-weight: 700; color: var(--accent-ink);
+    width: 1.75rem; height: 1.75rem; display: grid; place-items: center;
+    border: 1px solid var(--accent); border-radius: .45rem; background: var(--accent-soft);
+  }
+  ul.plain { padding-left: 1.1rem; margin: 1rem 0; }
+  ul.plain li { margin-bottom: .5rem; max-width: 66ch; }
+
+  .foot { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline); color: var(--faint); font-size: .9rem; }
+  .foot code { font-size: .82em; }
+
+  @media (max-width: 640px) {
+    .guards li { grid-template-columns: 1fr; gap: .4rem; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="kicker">Design Document · Collaborate</div>
+    <h1>Authorization layer for Collaborate</h1>
+    <p class="lede">Login, fine-grained permission checks at collaborative scale, and on-behalf-of delegation — built <em>around</em> the identity provider, not inside it.</p>
+    <div class="tags">
+      <span class="tag">OAuth2</span>
+      <span class="tag">OIDC</span>
+      <span class="tag">RFC 8693 · Token Exchange</span>
+      <span class="tag">ASP.NET Core</span>
+      <span class="tag">AWS · Redis PDP</span>
+    </div>
+  </header>
+
+  <p><strong>Scope.</strong> The authorization layer around an existing identity provider: OIDC-compliant login for two user populations, fine-grained permission checks at real-time collaborative scale, and on-behalf-of (OBO) delegation without a confused-deputy problem. We do <strong>not</strong> build the IdP (credentials / MFA); Caseware's central IdP and firms' own SAML/OIDC IdPs are upstream dependencies we call.</p>
+
+  <div class="callout">
+    <span class="lbl">One idea underneath everything</span>
+    <p><em>Coarse, slow-changing</em> authorization travels <strong>in the token</strong> and is verified locally with no network hop. <em>Fine-grained, fast-changing</em> authorization lives in a <strong>Policy Decision Point (PDP) cache</strong> fed by database change events. Tokens stay small and verifiable offline; revocation stays fast; the database is never on the hot path. Every decision below falls out of that split.</p>
+  </div>
+
+  <section>
+    <div class="eyebrow"><span class="num">01</span> High-Level Architecture</div>
+    <h2>A broker that issues, and a cache that decides</h2>
+
+    <figure>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  U["Firm staff / external users"] -->|"Auth Code + PKCE"| AS
+  CS["Client's own system"] -->|"Token Exchange"| TE
+  ISV["Internal service"] -->|"Token Exchange"| TE
+  subgraph AuthZ["AuthZ / Broker Service — OAuth2 AS"]
+    AS["Login + token issuance"]
+    TE["Token Exchange / OBO"]
+  end
+  AS -->|OIDC| CIdP[("Caseware central IdP")]
+  AS -->|"SAML / OIDC per firm"| FIdP[("Firm-owned IdPs")]
+  AS -->|"mints JWT"| RS
+  TE -->|"mints narrowed JWT"| RS
+  subgraph Resources["Resource APIs"]
+    RS["Document · Financial · Comments"]
+  end
+  RS -->|"validate JWT + fine-grained check"| PDP[("PDP cache · Redis")]
+  DB[("Permissions DB")] -->|"change events"| PROJ["Projector"]
+  PROJ -->|"snapshot · bump epoch · pub/sub"| PDP
+</pre>
+      </div>
+      <figcaption>Issuance path (broker) and decision path (PDP) are separate; the database is off the hot path.</figcaption>
+    </figure>
+
+    <h3>Components</h3>
+    <ul class="plain">
+      <li><strong>AuthZ / Broker Service</strong> — an OAuth2 Authorization Server that brokers upstream IdPs (OIDC to the central IdP; per-firm SAML/OIDC connectors selected by client config) and mints Collaborate access + refresh tokens. Also hosts the <strong>token-exchange / OBO</strong> endpoint built in Part 2.</li>
+      <li><strong>PDP cache (Redis)</strong> — per-user / per-workspace permission snapshots plus a revocation epoch. Resource APIs read it; they never touch the permissions DB directly.</li>
+      <li><strong>Resource APIs</strong> — Document, Financial Data, Comments. Each validates the JWT locally (signature via cached JWKS, <code>iss</code>, <code>aud</code>, <code>exp</code>, <code>scope</code>) and consults the PDP only for the fine-grained slice.</li>
+      <li><strong>Permissions DB + Projector</strong> — the source of truth. Any role/override/policy change emits an event; the projector writes the updated snapshot, bumps the principal's epoch, and publishes a revocation message.</li>
+    </ul>
+
+    <h3>Token model — the two tiers</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Lives in</th><th>Examples</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Coarse</td><td>JWT claims</td><td><span class="chip">firm</span> <span class="chip">workspace</span> <span class="chip">role</span> <span class="chip">scope</span> <span class="chip accent">auth_version</span></td><td>Verified offline → tens of thousands of checks/sec, no DB hop</td></tr>
+          <tr><td>Fine-grained</td><td>PDP (Redis)</td><td>single-document share, per-resource override, current epoch</td><td>Changes constantly; can't fit or safely cache in a token</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Login — Authorization Code + PKCE</h3>
+    <p>The broker pattern. Per-firm client configuration selects the upstream connector: firm staff → central Caseware IdP; external users of a federating firm → that firm's SAML/OIDC IdP, scoped to their users/workspaces. After upstream authentication Collaborate issues <strong>its own</strong> short-lived access token (~5 min) + refresh token, so downstream services trust exactly one issuer regardless of which IdP authenticated the human.</p>
+
+    <h3>Revocation in seconds — without mass re-authentication</h3>
+    <p>Three mechanisms compose:</p>
+    <ol class="phases">
+      <li><strong>Short access-token TTL (~5 min)</strong> bounds the worst case — the floor guarantee.</li>
+      <li><strong>Revocation epoch (<span class="chip accent">auth_version</span>).</strong> Each principal has an integer epoch in Redis, embedded in every token. Any permission/membership change bumps it. Resource APIs compare the token's epoch to the current one — an O(1) read already on their PDP path; a mismatch → 401 → silent refresh, which <em>fails closed</em> if membership was removed. "Revoke" becomes "advance a counter."</li>
+      <li><strong>Push for long-lived connections.</strong> A collaborative editing session can outlive a refresh cycle, so the projector publishes revocations on a <strong>Redis pub/sub</strong> channel; the connection layer re-evaluates or drops affected sessions immediately. TTL is the backstop; pub/sub is the fast path.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="num">02</span> On-Behalf-Of</div>
+    <h2>Delegation without a confused deputy</h2>
+    <p>Two delegation scenarios, one mechanism: <strong>RFC 8693 Token Exchange</strong>. A caller presents the end user's identity (<code>subject_token</code>) and its own (<code>actor_token</code>) and receives a <strong>narrower</strong> token to call <strong>one</strong> downstream <strong>as</strong> that user.</p>
+
+    <figure>
+      <div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+  participant Client as "Actor (client / service)"
+  participant AS as "AuthZ /oauth2/token"
+  participant PDP as "PDP (Redis)"
+  participant DS as "Downstream"
+  Client->>AS: exchange(subject=user, actor=self, audience=DocumentService, scope=doc.read)
+  AS->>AS: validate both tokens (sig / iss / exp)
+  AS->>PDP: subject permissions + current epoch
+  AS->>AS: actor registered? same firm? audience known?
+  AS->>AS: granted = requested ∩ subject ∩ actor ∩ audience
+  AS-->>Client: token{ sub=user, act.sub=actor, aud=DocumentService, scope=doc.read }
+  Client->>DS: call with narrowed token
+  DS->>DS: validate locally; check act-chain + epoch
+</pre>
+      </div>
+      <figcaption>The minted token is bound to one audience, downscoped to an intersection, and stamped with the actor chain.</figcaption>
+    </figure>
+
+    <h3>How the confused-deputy problem is defeated</h3>
+    <ul class="guards">
+      <li><span class="mark">AUD</span><p><strong>Mandatory audience.</strong> We <em>require</em> <code>audience</code> (RFC leaves it optional) and bind the token to exactly one downstream, so it can't be replayed against another service. The primary guard.</p></li>
+      <li><span class="mark">SCOPE</span><p><strong>Downscope to an intersection.</strong> Granted scope = <span class="chip">requested</span> ∩ <span class="chip">subject-permissions</span> ∩ <span class="chip">actor-grant</span> ∩ <span class="chip">audience-allowed</span>. Requested scope is never trusted alone; subject permissions come from the PDP, not from caller-supplied claims.</p></li>
+      <li><span class="mark">FIRM</span><p><strong>Actor scoped to firm.</strong> A client system may only act for users in its own firm; cross-firm delegation is rejected before any token is minted.</p></li>
+      <li><span class="mark">AUDIT</span><p><strong>Attribution.</strong> The token carries the RFC 8693 <span class="chip act">act.sub</span> claim — the acting party — so the downstream call is auditable as "actor X acting as user U."</p></li>
+    </ul>
+
+    <p>Scenario (a) <em>client system → Collaborate as its employee</em> and (b) <em>internal service → downstream as the triggering user</em> are the same exchange with different actors. Revocation uses the <strong>same epoch</strong>: minted tokens are short-lived and carry <span class="chip accent">auth_version</span>, so a bump invalidates them on the next hop without re-authenticating anyone.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="num">03</span> Implementation Plan</div>
+    <h2>Phased delivery</h2>
+    <ol class="phases">
+      <li><strong>Broker + issuance</strong> on the central IdP; JWT access/refresh tokens; JWKS publication + rotation.</li>
+      <li><strong>PDP + Redis + projector</strong>: DB change events → snapshots, epoch, pub/sub. Wire <span class="chip accent">auth_version</span> revocation.</li>
+      <li><strong>Resource-API authorization</strong>: shared middleware / ASP.NET Core policies for scope + fine-grained checks.</li>
+      <li><strong>Per-firm federation</strong>: SAML/OIDC connectors, per-firm client config.</li>
+      <li><strong>OBO token exchange</strong> (built in Part 2) for both delegation scenarios.</li>
+      <li><strong>Load + hardening</strong>: soak the PDP path, chaos-test Redis/IdP outages, pen-test the exchange.</li>
+    </ol>
+    <p><strong>AWS mapping:</strong> ALB / API Gateway → ECS/EKS services; <strong>ElastiCache (Redis)</strong> for the PDP + pub/sub; <strong>KMS</strong> for signing keys with rotation; <strong>EventBridge</strong>/outbox for DB change events; CloudWatch / OpenTelemetry for metrics and traces.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="num">04</span> Testing Strategy</div>
+    <h2>Prove the guards, measure the latency</h2>
+    <ul class="plain">
+      <li><strong>Unit</strong> — scope downscoping (intersection math), actor-trust, epoch comparison.</li>
+      <li><strong>Integration</strong> — token exchange end-to-end over the real pipeline (built in Part 2 via <code>WebApplicationFactory</code>), including cryptographic validation of the minted token.</li>
+      <li><strong>Contract</strong> — each downstream's expected scopes/claims are pinned, so a scope rename can't silently break authz.</li>
+      <li><strong>Security</strong> — the confused-deputy matrix: missing/unknown audience, scope escalation, cross-firm actor, forged/expired subject token, replay at the wrong audience.</li>
+      <li><strong>Revocation latency</strong> — bump epoch → assert the next check denies; measure event→deny time.</li>
+      <li><strong>Load</strong> — sustained PDP reads at target RPS; assert p99 decision latency and cache hit rate hold.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="num">05</span> Evaluation &amp; Observability</div>
+    <h2>What we watch</h2>
+    <ul class="plain">
+      <li><strong>Metrics</strong> — authz decision p50/p99; PDP cache hit rate; <strong>revocation propagation time</strong> (event→deny); token-exchange rate and denial reasons <em>by OAuth error code</em>; refresh rate; JWKS fetch errors.</li>
+      <li><strong>Audit</strong> — structured log of every exchange: <span class="chip">sub</span> <span class="chip act">act.sub</span> <span class="chip">aud</span> granted <span class="chip">scope</span> <span class="chip">firm</span>, decision. The actor chain is the audit record for OBO.</li>
+      <li><strong>Tracing</strong> — one trace spanning exchange → downstream call, so a denial is attributable to a specific rule.</li>
+      <li><strong>SLOs</strong> — p99 cached decision &lt; 5 ms; revocation visible &lt; 5 s; exchange availability ≥ 99.9%.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="num">06</span> Failure Modes &amp; Tradeoffs</div>
+    <h2>Where it bends, and which way</h2>
+    <ul class="plain">
+      <li><strong>Redis (PDP) outage.</strong> Fine-grained <em>overrides</em> fail <strong>closed</strong> — losing the source of truth for a narrowing decision must not widen access. The <em>epoch</em> read may fail <strong>open</strong> for a short, alarmed grace window so a blip doesn't 401 every live session; the short TTL bounds the exposure. This asymmetry is deliberate — the main safety/availability tradeoff.</li>
+      <li><strong>IdP outage.</strong> JWKS is cached, so <em>validation</em> survives; only <em>new logins</em> degrade.</li>
+      <li><strong>TTL vs revocation latency.</strong> Shorter TTL = faster natural revocation but more refresh load. ~5 min TTL + epoch + pub/sub gives fast revocation <em>without</em> very short TTLs everywhere.</li>
+      <li><strong>Cache staleness vs consistency.</strong> Event-driven invalidation is the normal path; the epoch is the backstop that makes a missed event <em>fail safe</em> rather than fail open.</li>
+      <li><strong>Downscoping complexity.</strong> Always computing an intersection is more code than honoring requested scope, but it's the only version that's safe under a confused-deputy attack.</li>
+      <li><strong>JWKS rotation &amp; clock skew.</strong> Overlapping keys during rotation; small (±30 s) skew allowance on <code>exp</code>/<code>nbf</code>.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Part 2 implements the OBO token-exchange slice (§2) as a runnable ASP.NET Core service with a 9-case xUnit suite — <code>POST /oauth2/token</code> plus a published <code>/.well-known/jwks.json</code>. See <code>README.md</code>.</p>
+</div>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Collaborate.Authz</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- DEV ONLY: stable signing key so tokens survive a restart and can be minted out-of-process. -->
+    <Content Include="dev-signing-key.pem" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.*" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.*" />
+  </ItemGroup>
+
+</Project>
