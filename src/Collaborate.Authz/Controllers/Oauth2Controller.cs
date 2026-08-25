@@ -49,11 +49,11 @@ namespace Collaborate.Authz.Controllers
 
                 var accessToken = _jwst.CreateToken(accessDescriptor);
                 var refreshToken = _jwst.CreateToken(refreshDescriptor);
-
+                
                 return new TokenResponse
                 {
                     AccessToken = accessToken,
-                    Expires = DateTime.UtcNow.AddHours(24),
+                    Expires = accessDescriptor.Expires ?? DateTime.UtcNow.AddHours(24),
                     RefreshToken = refreshToken,
                     Scope = "pet.read pet.write",
                 };
