@@ -28,6 +28,14 @@ var app = builder.Build();
 // never an HTML developer page or an empty 500 body.
 app.UseJsonErrorHandling();
 
+// Routing must run explicitly here rather than being implied by MapControllers: the bearer middleware reads
+// the matched endpoint's metadata, and before routing there is no matched endpoint to read.
+app.UseRouting();
+
+// Validates Authorization: Bearer tokens, but only for endpoints marked [RequireBearerToken] — the login and
+// token-exchange endpoints below are anonymous by design.
+app.UseBearerTokenValidation();
+
 app.MapControllers();
 
 // RFC 8693 token-exchange endpoint (the on-behalf-of slice) lives in Oauth2Controller.
@@ -35,6 +43,17 @@ app.MapControllers();
 // Public keys so a real downstream could validate minted tokens offline. Closes the loop for the demo.
 app.MapGet("/.well-known/jwks.json", (SigningKeyProvider keys) =>
     Results.Json(new { keys = new[] { keys.PublicJwkJson() } }));
+
+// A protected resource: the smallest thing that proves a token minted by /api/Oauth2/token can be presented
+// back and consumed. Reaching the body at all means the bearer middleware validated the token and built the
+// principal below.
+app.MapGet("/api/me", (HttpContext ctx) => Results.Json(new
+{
+    sub = ctx.User.FindFirst("sub")?.Value,
+    username = ctx.User.FindFirst("username")?.Value,
+    name = ctx.User.FindFirst("name")?.Value,
+}))
+.WithMetadata(new RequireBearerTokenAttribute());
 
 app.Run();
 
