@@ -30,46 +30,33 @@ namespace Collaborate.Authz.Middleware
             _env = env;
         }
 
+        public async Task RenderExceptionAsync(Exception ex, HttpContext context)
+        {
+            int statusCode = ComputeStatusCode(ex);
+            _log.LogError(ex, ex.Message, context.Request.Method, context.Request.Path);
+            if (!await TryWriteAsync(context, "server_error", ex.Message, statusCode, ex.StackTrace))
+                throw ex;
+        }
+
+        private int ComputeStatusCode(Exception ex)
+        {
+            if (ex is AuthzException)
+                return StatusCodes.Status400BadRequest;
+            else if (ex is UnauthorizedAccessException)
+                return StatusCodes.Status401Unauthorized;
+            else
+                return StatusCodes.Status500InternalServerError;
+        }
+
         public async Task InvokeAsync(HttpContext context)
         {
             try
             {
                 await _next(context);
             }
-            catch (TokenExchangeException ex)
-            {
-                _log.LogWarning(ex, "token-exchange failure escaped the handler: {Error}", ex.ErrorType);
-                if (!await TryWriteAsync(context, ex.ErrorType, ex.Message, ex.StatusCode))
-                    throw;
-            }
-            catch (BadHttpRequestException ex)
-            {
-                // Malformed body, unreadable form, request-size limits — the caller's fault, not ours.
-                _log.LogWarning(ex, "malformed request to {Path}", context.Request.Path);
-                if (!await TryWriteAsync(context, "invalid_request", ex.Message, StatusCodes.Status400BadRequest))
-                    throw;
-            }
-            catch (AuthzException ex)
-            {
-                _log.LogWarning(ex, "authorization failure at {Path}", context.Request.Path);
-                if (!await TryWriteAsync(context, "invalid_request", ex.Message, StatusCodes.Status400BadRequest))
-                    throw;
-            }
             catch (Exception ex)
             {
-                _log.LogError(ex, "unhandled exception at {Method} {Path}", context.Request.Method, context.Request.Path);
-
-                // Detail is for the log, not the wire — outside Development the caller learns nothing.
-                bool dev = _env.IsDevelopment();
-                bool written = await TryWriteAsync(
-                    context,
-                    "server_error",
-                    dev ? $"{ex.GetType().Name}: {ex.Message}" : GenericDescription,
-                    StatusCodes.Status500InternalServerError,
-                    dev ? ex.ToString() : null);
-
-                if (!written)
-                    throw;
+                await RenderExceptionAsync(ex, context);
             }
         }
 

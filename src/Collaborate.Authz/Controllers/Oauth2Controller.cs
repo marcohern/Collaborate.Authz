@@ -1,12 +1,9 @@
-﻿using Collaborate.Authz.Security;
+﻿using Collaborate.Authz.Responses;
+using Collaborate.Authz.Security;
 using Collaborate.Authz.TokenExchange;
-using Collaborate.Authz.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
-using System.Security;
 
 namespace Collaborate.Authz.Controllers
 {
@@ -37,12 +34,12 @@ namespace Collaborate.Authz.Controllers
 
         [HttpPost]
         [Route("token")]
-        public async Task<IResult> LoginAsync([FromBody] PasswordLogin login)
+        public async Task<TokenResponse> LoginAsync([FromBody] PasswordLogin login)
         {
             await Task.CompletedTask;
             if (login.Username == "admin" && login.Password == "Admin123")
             {
-                var descriptor = new SecurityTokenDescriptor
+                var accessDescriptor = new SecurityTokenDescriptor
                 {
                     Issuer = TokenConstants.Issuer,
                     IssuedAt = DateTime.Now,
@@ -51,22 +48,41 @@ namespace Collaborate.Authz.Controllers
                     SigningCredentials = _keys.SigningCredentials,
                     Claims = new Dictionary<string, object>
                     {
-                        ["sub"] = "user",
+                        ["sub"] = "access",
                         ["auth_version"] = 1,
                         ["username"] = login.Username,
                         ["name"] = "Administrator",
                     },
                 };
-                var token = _jwst.CreateToken(descriptor);
-
-                return Results.Json(new
+                var refreshDescriptor = new SecurityTokenDescriptor
                 {
-                    Token = token
-                });
+                    Issuer = TokenConstants.Issuer,
+                    IssuedAt = DateTime.Now,
+                    NotBefore = DateTime.Now,
+                    Expires = DateTime.Now.AddDays(30),
+                    SigningCredentials = _keys.SigningCredentials,
+                    Claims = new Dictionary<string, object>
+                    {
+                        ["sub"] = "refreshToken",
+                        ["auth_version"] = 1,
+                        ["username"] = login.Username,
+                        ["name"] = "Administrator",
+                    },
+                };
+
+                var accessToken = _jwst.CreateToken(accessDescriptor);
+                var refreshToken = _jwst.CreateToken(refreshDescriptor);
+
+                return new TokenResponse
+                {
+                    AccessToken = accessToken,
+                    Expires = DateTime.Now.AddHours(24),
+                    RefreshToken = refreshToken,
+                };
             }
             else
             {
-                return Results.Unauthorized();
+                throw new UnauthorizedAccessException("Invalid username or password.");
             }
         }
     }
