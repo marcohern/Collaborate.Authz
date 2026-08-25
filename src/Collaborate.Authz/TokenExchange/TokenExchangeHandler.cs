@@ -1,3 +1,4 @@
+using Collaborate.Authz.BusinessLogic;
 using Collaborate.Authz.Exceptions;
 using Collaborate.Authz.Security;
 using Collaborate.Authz.Utilities;

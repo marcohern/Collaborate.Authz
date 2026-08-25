@@ -1,3 +1,4 @@
+using Collaborate.Authz.BusinessLogic;
 using Collaborate.Authz.Middleware;
 using Collaborate.Authz.Security;
 using Collaborate.Authz.TokenExchange;

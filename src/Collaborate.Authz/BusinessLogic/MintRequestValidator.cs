@@ -1,11 +1,12 @@
 ﻿using Collaborate.Authz.Exceptions;
 using Collaborate.Authz.Security;
 using Collaborate.Authz.TokenExchange;
+using Collaborate.Authz.Utilities;
 using Microsoft.AspNetCore.Http;
 using System.Security;
 using System.Threading.Tasks;
 
-namespace Collaborate.Authz.Utilities
+namespace Collaborate.Authz.BusinessLogic
 {
     public class MintRequestValidator
     {
