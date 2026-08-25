@@ -16,6 +16,7 @@ builder.Services.AddSingleton<ITokenMinter, JwtTokenMinter>();
 builder.Services.AddSingleton<TokenExchangeHandler>();
 builder.Services.AddSingleton<MintRequestValidator>();
 builder.Services.AddSingleton<JsonWebTokenHandler>();
+builder.Services.AddSingleton<TokenDescriptorCreator>();
 
 // Attribute-routed controllers (Oauth2Controller).
 builder.Services.AddControllers();

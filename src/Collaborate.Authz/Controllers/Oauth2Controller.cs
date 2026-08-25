@@ -1,6 +1,7 @@
 ﻿using Collaborate.Authz.Responses;
 using Collaborate.Authz.Security;
 using Collaborate.Authz.TokenExchange;
+using Collaborate.Authz.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -15,14 +16,18 @@ namespace Collaborate.Authz.Controllers
         private readonly JsonWebTokenHandler _jwst;
         private readonly SigningKeyProvider _keys;
 
+        private readonly TokenDescriptorCreator _tokenDescriptorCreator;
+
         public Oauth2Controller(
             TokenExchangeHandler handler,
             JsonWebTokenHandler jwst,
-            SigningKeyProvider keys)
+            SigningKeyProvider keys,
+            TokenDescriptorCreator tokenDescriptorCreator)
         {
             _handler = handler;
             _jwst = jwst;
             _keys = keys;
+            _tokenDescriptorCreator = tokenDescriptorCreator;
         }
 
         [HttpPost]
@@ -39,36 +44,8 @@ namespace Collaborate.Authz.Controllers
             await Task.CompletedTask;
             if (login.Username == "admin" && login.Password == "Admin123")
             {
-                var accessDescriptor = new SecurityTokenDescriptor
-                {
-                    Issuer = TokenConstants.Issuer,
-                    IssuedAt = DateTime.Now,
-                    NotBefore = DateTime.Now,
-                    Expires = DateTime.Now.AddHours(24),
-                    SigningCredentials = _keys.SigningCredentials,
-                    Claims = new Dictionary<string, object>
-                    {
-                        ["sub"] = "access",
-                        ["auth_version"] = 1,
-                        ["username"] = login.Username,
-                        ["name"] = "Administrator",
-                    },
-                };
-                var refreshDescriptor = new SecurityTokenDescriptor
-                {
-                    Issuer = TokenConstants.Issuer,
-                    IssuedAt = DateTime.Now,
-                    NotBefore = DateTime.Now,
-                    Expires = DateTime.Now.AddDays(30),
-                    SigningCredentials = _keys.SigningCredentials,
-                    Claims = new Dictionary<string, object>
-                    {
-                        ["sub"] = "refreshToken",
-                        ["auth_version"] = 1,
-                        ["username"] = login.Username,
-                        ["name"] = "Administrator",
-                    },
-                };
+                var accessDescriptor = _tokenDescriptorCreator.CreateAccessTokenDescriptor(login.Username, "Administrator", _keys.SigningCredentials);
+                var refreshDescriptor = _tokenDescriptorCreator.CreateRefreshTokenDescriptor(login.Username, "Administrator", _keys.SigningCredentials);
 
                 var accessToken = _jwst.CreateToken(accessDescriptor);
                 var refreshToken = _jwst.CreateToken(refreshDescriptor);
@@ -76,8 +53,9 @@ namespace Collaborate.Authz.Controllers
                 return new TokenResponse
                 {
                     AccessToken = accessToken,
-                    Expires = DateTime.Now.AddHours(24),
+                    Expires = DateTime.UtcNow.AddHours(24),
                     RefreshToken = refreshToken,
+                    Scope = "pet.read pet.write",
                 };
             }
             else
