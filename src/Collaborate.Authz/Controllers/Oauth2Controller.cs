@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Collaborate.Authz.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("oauth2")]
     [ApiController]
     public class Oauth2Controller : ControllerBase
     {
@@ -30,15 +30,13 @@ namespace Collaborate.Authz.Controllers
             _tokenDescriptorCreator = tokenDescriptorCreator;
         }
 
-        [HttpPost]
-        [Route("create-token")]
+        [HttpPost("token")]
         public async Task<IResult> TokenAsync()
         {
             return await _handler.HandleAsync(Request);
         }
 
-        [HttpPost]
-        [Route("token")]
+        [HttpPost("login")]
         public async Task<TokenResponse> LoginAsync([FromBody] PasswordLogin login)
         {
             await Task.CompletedTask;

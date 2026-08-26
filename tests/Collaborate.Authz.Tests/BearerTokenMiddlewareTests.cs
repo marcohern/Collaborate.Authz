@@ -16,8 +16,9 @@ namespace Collaborate.Authz.Tests;
 /// <summary>
 /// Exercises <c>BearerTokenMiddleware</c> end-to-end over the real pipeline, the way the token-exchange suite
 /// does: the interesting behavior is where the middleware sits relative to routing and endpoint metadata, and
-/// only a booted app reproduces that. <c>GET /api/me</c> is the marked endpoint; the login endpoint is the
-/// unmarked control that proves enforcement is opt-in.
+/// only a booted app reproduces that. <c>GET /api/me</c> (minimal API) and <c>GET /api/PrivateValues</c>
+/// (controller, attribute on the class) are the marked endpoints; the login endpoint is the unmarked control
+/// that proves enforcement is opt-in.
 ///
 /// Tokens are signed with the app's own <see cref="SigningKeyProvider"/> singleton resolved from
 /// <c>_factory.Services</c>, so the same key that validates them issued them — no real IdP in the loop.
@@ -25,6 +26,9 @@ namespace Collaborate.Authz.Tests;
 public sealed class BearerTokenMiddlewareTests : IDisposable
 {
     private const string ProtectedPath = "/api/me";
+
+    /// <summary>A marked <em>controller</em> endpoint: the attribute sits on the class, not the action.</summary>
+    private const string ProtectedControllerPath = "/api/PrivateValues";
 
     private readonly WebApplicationFactory<Program> _factory = new();
     private readonly HttpClient _client;
@@ -151,16 +155,42 @@ public sealed class BearerTokenMiddlewareTests : IDisposable
     public async Task Unmarked_endpoint_is_reachable_without_a_token()
     {
         HttpResponseMessage response = await _client.PostAsJsonAsync(
-            "/api/Oauth2/token",
+            "/oauth2/login",
             new { username = "admin", password = "Admin123" });
 
         // The login endpoint answers on its own terms; what matters is that the middleware did not challenge.
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    private Task<HttpResponseMessage> GetWithBearerAsync(string token)
+    // --- The gate also covers controllers: [RequireBearerToken] on the class reaches endpoint metadata. ---
+    [Fact]
+    public async Task Marked_controller_endpoint_is_challenged_without_a_token()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, ProtectedPath);
+        HttpResponseMessage response = await _client.GetAsync(ProtectedControllerPath);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Contains("Bearer", response.Headers.WwwAuthenticate.ToString());
+
+        JsonElement body = await ReadBodyAsync(response);
+        Assert.Equal("invalid_token", body.GetProperty("error").GetString());
+    }
+
+    [Fact]
+    public async Task Marked_controller_endpoint_is_reachable_with_a_valid_token()
+    {
+        string token = TestTokens.Identity(_keys, subject: "user-42");
+
+        HttpResponseMessage response = await GetWithBearerAsync(token, ProtectedControllerPath);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        JsonElement body = await ReadBodyAsync(response);
+        Assert.Equal(3, body.GetArrayLength());
+    }
+
+    private Task<HttpResponseMessage> GetWithBearerAsync(string token, string path = ProtectedPath)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, path);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return _client.SendAsync(request);
     }

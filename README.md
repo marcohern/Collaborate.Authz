@@ -41,6 +41,17 @@ Failures use OAuth error codes: `invalid_request`, `invalid_client` (401), `unau
 
 `GET /.well-known/jwks.json` publishes the public key so a real downstream could validate offline.
 
+### The other endpoints
+
+- **`POST /oauth2/login`** (`application/json`, anonymous) — dev password login (`admin` / `Admin123`)
+  that mints an identity token, so the protected endpoints below can be exercised without a real IdP.
+  Returns `{ accessToken, refreshToken, expires, scope }`.
+- **`GET /api/PrivateValues`** and **`GET /api/me`** — bearer-protected resources. Both are marked
+  `[RequireBearerToken]`, so `BearerTokenMiddleware` validates the `Authorization: Bearer <jwt>` header
+  against the same `InboundTokenValidator` the exchange uses; without a valid token they answer `401`
+  with `{ "error": "invalid_token" }`. `/api/me` echoes the principal's claims, which is what proves the
+  minted token round-trips.
+
 ### The confused-deputy guards (each maps to a test)
 
 1. **`audience` is required** → refuse to mint an unrestricted token.
@@ -128,7 +139,10 @@ and `CommentsService` (`comment.*`).
 ```
 DESIGN.md · design-artifact.html · SESSION.md
 src/Collaborate.Authz/
-  Program.cs                         # DI + endpoints (/oauth2/token, /.well-known/jwks.json)
+  Program.cs                         # DI + pipeline (/.well-known/jwks.json, /api/me)
+  Controllers/
+    Oauth2Controller.cs              # POST /oauth2/token (exchange), POST /oauth2/login
+    PrivateValuesController.cs       # GET /api/PrivateValues, bearer-protected
   TokenExchange/
     TokenExchangeHandler.cs          # the ordered guards (core logic)
     JwtTokenMinter.cs                # mints the narrowed act-chain token

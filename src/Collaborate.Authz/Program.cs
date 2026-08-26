@@ -19,7 +19,7 @@ builder.Services.AddSingleton<MintRequestValidator>();
 builder.Services.AddSingleton<JsonWebTokenHandler>();
 builder.Services.AddSingleton<TokenDescriptorCreator>();
 
-// Attribute-routed controllers (Oauth2Controller).
+// Attribute-routed controllers (Oauth2Controller, PrivateValuesController).
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -38,13 +38,14 @@ app.UseBearerTokenValidation();
 
 app.MapControllers();
 
-// RFC 8693 token-exchange endpoint (the on-behalf-of slice) lives in Oauth2Controller.
+// RFC 8693 token-exchange endpoint (the on-behalf-of slice) lives in Oauth2Controller: POST /oauth2/token.
+// Password login is POST /oauth2/login; both are anonymous by design.
 
 // Public keys so a real downstream could validate minted tokens offline. Closes the loop for the demo.
 app.MapGet("/.well-known/jwks.json", (SigningKeyProvider keys) =>
     Results.Json(new { keys = new[] { keys.PublicJwkJson() } }));
 
-// A protected resource: the smallest thing that proves a token minted by /api/Oauth2/token can be presented
+// A protected resource: the smallest thing that proves a token minted by /oauth2/login can be presented
 // back and consumed. Reaching the body at all means the bearer middleware validated the token and built the
 // principal below.
 app.MapGet("/api/me", (HttpContext ctx) => Results.Json(new
